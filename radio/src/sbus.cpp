@@ -35,28 +35,47 @@
  */
 
 #include "opentx.h"
+#include "sbus.h"
 
-#define SBUS_MIN_FRAME_SIZE   23
-#define SBUS_MAX_FRAME_SIZE   28
+#define SBUS_FRAME_GAP_DELAY   1000 // 500uS
 
-#define SBUS_FRAME_GAP_DELAY 1000 // 500uS
-
-#define SBUS_START_BYTE     0x0F
-#define SBUS_FLAGS_IDX        23
+#define SBUS_START_BYTE        0x0F
+#define SBUS_FLAGS_IDX         23
 #define SBUS_FRAMELOST_BIT     2
 #define SBUS_FAILSAFE_BIT      3
 
 #define SBUS_CH_BITS          11
-#define SBUS_CH_MASK ((1<<SBUS_CH_BITS)-1)
+#define SBUS_CH_MASK          ((1<<SBUS_CH_BITS)-1)
 
-#define SBUS_CH_CENTER     0x3E0
+#define SBUS_CH_CENTER        0x3E0
 
 Fifo<32> sbusFifo;
 uint8_t SbusFrame[SBUS_MAX_FRAME_SIZE];
 uint16_t SbusTimer ;
 uint8_t SbusIndex = 0 ;
 
-void processSbusFrame(uint8_t *sbus, int16_t *pulses, uint32_t size)
+// Range for pulses (channels output) is [-1024:+1024]
+void createSbusFrame(uint8_t * sbus, int16_t * pulses)
+{
+  *sbus++ = SBUS_START_BYTE;
+
+  uint32_t bits = 0;
+  uint8_t bitsavailable = 0;
+  for (int i=0; i<NUM_TRAINER; i++) {
+    bits |= (SBUS_CH_CENTER + (((pulses[i]) * 4) / 5)) << bitsavailable;
+    bitsavailable += SBUS_CH_BITS;
+    while (bitsavailable >= 8) {
+      *sbus++ = bits;
+      bits >>= 8;
+      bitsavailable -= 8;
+    }
+  }
+  
+  *sbus = 0; // SBUS flags
+}
+
+// Range for pulses (ppm input) is [-512:+512]
+void processSbusFrame(uint8_t * sbus, int16_t * pulses, uint32_t size)
 {
   uint32_t inputbitsavailable = 0;
   uint32_t inputbits = 0;

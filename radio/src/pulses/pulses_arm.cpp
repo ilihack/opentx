@@ -99,6 +99,11 @@ void setupPulses(unsigned int port)
           }
           break;
 #endif
+#if defined(PCBTARANIS) && defined(SBUS)
+        case MODULE_TYPE_SBUS:
+          required_protocol = PROTO_SBUS;
+          break;
+#endif
         default:
           required_protocol = PROTO_NONE;
           break;
@@ -130,6 +135,11 @@ void setupPulses(unsigned int port)
         disable_dsm2(port);
         break;
 #endif
+#if defined(SBUS)
+      case PROTO_SBUS:
+        disable_sbus(port);
+        break;
+#endif
       case PROTO_PPM:
         disable_ppm(port);
         break;
@@ -151,9 +161,15 @@ void setupPulses(unsigned int port)
         init_dsm2(port);
         break;
 #endif
+#if defined(SBUS)
+      case PROTO_SBUS:
+        init_sbus(port);
+        break;
+#endif
       case PROTO_PPM:
         init_ppm(port);
         break;
+
       default:
         init_no_pulses(port);
         break;
@@ -171,6 +187,15 @@ void setupPulses(unsigned int port)
     case PROTO_DSM2_DSMX:
       setupPulsesDSM2(port);
       break;
+#endif
+#if defined(SBUS)
+    case PROTO_SBUS:
+    {
+      uint8_t * sbus = modulePulsesData[port].sbus.pulses;
+      createSbusFrame(sbus, &channelOutputs[g_model.moduleData[port].channelsStart]);
+      sportSendBuffer(sbus, 24);
+      break;
+    }
 #endif
     case PROTO_PPM:
       setupPulsesPPM(port);

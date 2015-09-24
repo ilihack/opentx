@@ -87,10 +87,15 @@ PACK(struct Dsm2PulsesData {
 });
 #endif
 
+PACK(struct SbusPulsesData {
+  uint8_t pulses[28];
+});
+
 union ModulePulsesData {
   PxxPulsesData pxx;
   Dsm2PulsesData dsm2;
   PpmPulsesData ppm;
+  SbusPulsesData sbus;
 };
 
 union TrainerPulsesData {

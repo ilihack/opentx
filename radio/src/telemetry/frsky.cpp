@@ -615,7 +615,13 @@ void telemetryInit(void)
   if (telemetryProtocol == PROTOCOL_FRSKY_D) {
     telemetryPortInit(FRSKY_D_BAUDRATE);
   }
-  else if (telemetryProtocol==PROTOCOL_FRSKY_D_SECONDARY) {
+#if defined(PCBTARANIS)
+  else if (telemetryProtocol == PROTOCOL_PULSES_SBUS) {
+    telemetryPortInit(SBUS_BAUDRATE);
+    telemetryPortSetDirectionOutput();
+  }
+#endif
+  else if (telemetryProtocol == PROTOCOL_FRSKY_D_SECONDARY) {
     telemetryPortInit(0);
     serial2TelemetryInit(PROTOCOL_FRSKY_D_SECONDARY);
   }

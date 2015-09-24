@@ -480,7 +480,7 @@
 #endif
 
 #if defined(CPUARM)
-  static const int8_t maxChannelsModules[] = { 0, 8, 8, -2 }; // relative to 8!
+  static const int8_t maxChannelsModules[] = { 0, 8, 8, -2, 8 }; // relative to 8!
   static const int8_t maxChannelsXJT[] = { 0, 8, 0, 4 }; // relative to 8!
   #define NUM_CHANNELS(idx)                 (8+g_model.moduleData[idx].channelsCount)
   #define MAX_TRAINER_CHANNELS()            (8)
@@ -498,6 +498,11 @@
     #define IS_MODULE_DSM2(idx)             (idx==EXTERNAL_MODULE && g_model.moduleData[EXTERNAL_MODULE].type==MODULE_TYPE_DSM2)
   #else
     #define IS_MODULE_DSM2(idx)             (false)
+  #endif
+  #if defined(SBUS)
+    #define IS_MODULE_SBUS(idx)             (idx==EXTERNAL_MODULE && g_model.moduleData[EXTERNAL_MODULE].type==MODULE_TYPE_SBUS)
+  #else
+    #define IS_MODULE_SBUS(idx)             (false)
   #endif
   #if defined(TARANIS_INTERNAL_PPM)
     #define MAX_INTERNAL_MODULE_CHANNELS()  ((g_model.moduleData[INTERNAL_MODULE].type == MODULE_TYPE_XJT) ? maxChannelsXJT[1+g_model.moduleData[0].rfProtocol] : maxChannelsModules[g_model.moduleData[INTERNAL_MODULE].type])
@@ -977,8 +982,8 @@ void checkAll();
   void getADC();
 #endif
 
-#if defined(PCBTARANIS)
-void processSbusInput();
+#if defined(SBUS)
+#include "sbus.h"
 #endif
 
 extern void backlightOn();
